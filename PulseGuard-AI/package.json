@@ -1,0 +1,22 @@
+{
+  "name": "pulseguard-ai",
+  "version": "3.1.0",
+  "description": "PulseGuard AI - Operations Early-Warning Intelligence Platform",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "test": "node test-supabase-auth.js"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "keywords": [
+    "early-warning",
+    "ai",
+    "operations",
+    "risk-mitigation",
+    "supabase-auth"
+  ],
+  "author": "",
+  "license": "MIT"
+}

@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>404 - Ledger Route Not Found | PulseGuard</title>
+  <meta name="description" content="The page you requested could not be located in PulseGuard.">
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    .error-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 85vh;
+      text-align: center;
+      padding: 32px 24px;
+      background: var(--paper);
+    }
+    .error-code {
+      font-family: var(--font-display, serif);
+      font-size: 80px;
+      font-weight: 500;
+      color: var(--ink);
+      letter-spacing: -0.04em;
+      line-height: 1;
+      margin-bottom: 8px;
+    }
+    .error-tag {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--accent);
+      margin-bottom: 12px;
+      font-weight: 600;
+    }
+    .error-title {
+      font-family: var(--font-display, serif);
+      font-size: 24px;
+      font-weight: 500;
+      color: var(--ink);
+      margin-bottom: 12px;
+    }
+    .error-desc {
+      font-size: 13px;
+      color: var(--ink-muted);
+      max-width: 440px;
+      margin-bottom: 28px;
+      line-height: 1.6;
+    }
+  </style>
+</head>
+<body>
+  <div class="error-container">
+    <div class="brand-logo" style="width: 44px; height: 44px; margin-bottom: 20px;">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"></path>
+        <path d="M3 5v14a2 2 0 0 0 2 2h16v-5"></path>
+        <path d="M18 12a2 2 0 0 0 0 4h4v-4Z"></path>
+      </svg>
+    </div>
+    <div class="error-tag">Unmapped Route</div>
+    <div class="error-code">404</div>
+    <h1 class="error-title">Page Not Found</h1>
+    <p class="error-desc">
+      The ledger route you requested does not exist or has been restructured. All client-side storage remains intact and sovereign on your device.
+    </p>
+    <a href="/" class="btn btn-primary" style="padding: 10px 22px;">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <line x1="19" y1="12" x2="5" y2="12"></line>
+        <polyline points="12 19 5 12 12 5"></polyline>
+      </svg>
+      <span>Return to Ledger Dashboard</span>
+    </a>
+  </div>
+</body>
+</html>

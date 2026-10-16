@@ -1,0 +1,21 @@
+{
+  "name": "pulseguard-budget",
+  "version": "1.0.0",
+  "description": "PulseGuard Personal Budget & Expense Management Platform",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "test": "node test-server.js"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "keywords": [
+    "budget",
+    "finance",
+    "pulseguard",
+    "sqlite"
+  ],
+  "author": "",
+  "license": "MIT"
+}

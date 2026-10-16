@@ -1,0 +1,1196 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PulseGuard - Personal Budget &amp; Expense Manager</title>
+  <meta name="description" content="Personal budget manager with category tracking, month-over-month trend charts, plain-English financial insights, and CSV import/export. 100% private in your browser.">
+  <meta property="og:title" content="PulseGuard - Personal Budget &amp; Expense Manager">
+  <meta property="og:description" content="Private offline-first budget manager with category tracking, month-over-month trend charts, plain-English financial insights, and CSV import/export.">
+  <meta name="theme-color" content="#faf8f5">
+  <!-- 4. Favicon -->
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <!-- 8. Scroll Progress Bar (Top of window) -->
+  <div id="scroll-progress-bar" class="scroll-progress-bar" aria-hidden="true"></div>
+
+  <!-- 12. Accessible Skip to Content Link -->
+  <a href="#main-content" class="skip-link">Skip to content &darr;</a>
+
+  <!-- 11. Sticky App Header -->
+  <header class="app-header">
+    <div class="brand-section">
+      <!-- 5. Mobile Menu Hamburger Toggle -->
+      <button class="btn-icon-action btn-mobile-menu" id="btn-toggle-mobile-menu" aria-label="Toggle Navigation Menu">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="3" y1="12" x2="21" y2="12"></line>
+          <line x1="3" y1="6" x2="21" y2="6"></line>
+          <line x1="3" y1="18" x2="21" y2="18"></line>
+        </svg>
+      </button>
+
+      <!-- 17. Clickable Logo & Title -->
+      <a href="#dashboard" class="brand-link" id="brand-logo-link" style="display: flex; align-items: center; gap: 12px; text-decoration: none; cursor: pointer;">
+        <div class="brand-logo" aria-hidden="true">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"></path>
+            <path d="M3 5v14a2 2 0 0 0 2 2h16v-5"></path>
+            <path d="M18 12a2 2 0 0 0 0 4h4v-4Z"></path>
+          </svg>
+        </div>
+        <div class="brand-text">
+          <h1>PulseGuard <span class="brand-tag">Private</span></h1>
+          <div class="brand-subtitle">Personal Budget &amp; Financial Insights</div>
+        </div>
+      </a>
+    </div>
+
+    <!-- 3. Global Site Search Bar -->
+    <div class="header-search-wrapper">
+      <div class="header-search-inner">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="search-icon">
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+        <input type="text" class="header-search-input" id="global-site-search" placeholder="Search transactions, categories, FAQs (Ctrl+K)..." aria-label="Site Search">
+        <kbd class="search-shortcut-kbd">Ctrl+K</kbd>
+      </div>
+      <!-- Search Dropdown Results -->
+      <div class="global-search-dropdown" id="global-search-results" style="display:none;"></div>
+    </div>
+
+    <!-- Month Navigation Controls -->
+    <div class="month-picker-container" aria-label="Month Navigation">
+      <button class="btn-month-nav" id="btn-prev-month" title="Previous Month" aria-label="Previous Month">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <polyline points="15 18 9 12 15 6"></polyline>
+        </svg>
+      </button>
+      <div class="current-month-display" id="month-display" title="Click to view month">
+        <span id="current-month-text">October 2026</span>
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <polyline points="6 9 12 15 18 9"></polyline>
+        </svg>
+      </div>
+      <button class="btn-month-nav" id="btn-next-month" title="Next Month" aria-label="Next Month">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <polyline points="9 18 15 12 9 6"></polyline>
+        </svg>
+      </button>
+      <button class="month-quick-jump" id="btn-current-month" title="Jump to current month">Today</button>
+    </div>
+
+    <!-- Header Actions -->
+    <div class="header-actions">
+      <!-- 18. Last Updated Date Pill -->
+      <div class="header-sync-badge" id="last-updated-badge" title="Last modified in browser LocalStorage">
+        <span class="sync-dot"></span>
+        <span id="last-updated-text">Synced just now</span>
+      </div>
+
+      <!-- SQL Database Engine Live Indicator Badge -->
+      <div class="header-sync-badge sql-badge" id="sql-db-badge" title="SQLite 3 Database Status">
+        <span class="sync-dot sql-dot"></span>
+        <span id="sql-db-text">SQL Syncing...</span>
+      </div>
+
+      <!-- Currency selector -->
+      <select class="currency-select" id="currency-select" title="Select Currency" aria-label="Select Currency">
+        <option value="USD">$ USD</option>
+        <option value="EUR">€ EUR</option>
+        <option value="GBP">£ GBP</option>
+        <option value="INR">₹ INR</option>
+        <option value="CAD">C$ CAD</option>
+        <option value="AUD">A$ AUD</option>
+        <option value="JPY">¥ JPY</option>
+      </select>
+
+      <!-- 1. Dark Mode Toggle -->
+      <button class="btn-theme" id="btn-theme-toggle" title="Toggle Dark/Light Theme" aria-label="Toggle Theme">
+        <svg id="theme-sun-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none;">
+          <circle cx="12" cy="12" r="5"></circle>
+          <line x1="12" y1="1" x2="12" y2="3"></line>
+          <line x1="12" y1="21" x2="12" y2="23"></line>
+          <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+          <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+          <line x1="1" y1="12" x2="3" y2="12"></line>
+          <line x1="21" y1="12" x2="23" y2="12"></line>
+          <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+          <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+        </svg>
+        <svg id="theme-moon-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+        </svg>
+      </button>
+
+      <!-- Add Transaction Button -->
+      <button class="btn btn-primary" id="btn-open-add-tx" title="Add Transaction (Shortcut: N)">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <line x1="12" y1="5" x2="12" y2="19"></line>
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+        </svg>
+        <span>Add Transaction</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- 5. Mobile Slide-out Menu Drawer -->
+  <div class="mobile-drawer" id="mobile-menu-drawer" aria-hidden="true">
+    <div class="mobile-drawer-header">
+      <div style="font-weight: 700; font-size: 14px; color: var(--text-main);">Navigation</div>
+      <button class="btn-close-modal" id="btn-close-mobile-menu" aria-label="Close Menu">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+    </div>
+    <div class="mobile-drawer-body">
+      <div class="mobile-nav-links">
+        <button class="mobile-nav-item active" data-tab="dashboard">Dashboard</button>
+        <button class="mobile-nav-item" data-tab="transactions">Transactions Ledger</button>
+        <button class="mobile-nav-item" data-tab="budgets">Monthly Budgets</button>
+        <button class="mobile-nav-item" data-tab="io">CSV &amp; Backup</button>
+        <button class="mobile-nav-item" data-tab="faq">FAQ &amp; Help</button>
+      </div>
+      <div style="margin-top: 20px; padding-top: 14px; border-top: 1px solid var(--border);">
+        <button class="btn btn-primary" style="width: 100%;" id="btn-mobile-add-tx">+ Add Transaction</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Navigation Tabs Bar -->
+  <nav class="nav-tab-bar" role="tablist">
+    <button class="tab-btn active" data-tab="dashboard" role="tab" aria-selected="true">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <rect x="3" y="3" width="7" height="9"></rect>
+        <rect x="14" y="3" width="7" height="5"></rect>
+        <rect x="14" y="12" width="7" height="9"></rect>
+        <rect x="3" y="16" width="7" height="5"></rect>
+      </svg>
+      <span>Dashboard</span>
+    </button>
+    <button class="tab-btn" data-tab="transactions" role="tab" aria-selected="false">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <line x1="8" y1="6" x2="21" y2="6"></line>
+        <line x1="8" y1="12" x2="21" y2="12"></line>
+        <line x1="8" y1="18" x2="21" y2="18"></line>
+        <line x1="3" y1="6" x2="3.01" y2="6"></line>
+        <line x1="3" y1="12" x2="3.01" y2="12"></line>
+        <line x1="3" y1="18" x2="3.01" y2="18"></line>
+      </svg>
+      <span>Transactions</span>
+      <span class="badge-pill" id="badge-tx-count">0</span>
+    </button>
+    <button class="tab-btn" data-tab="budgets" role="tab" aria-selected="false">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+      </svg>
+      <span>Monthly Budgets</span>
+      <span class="badge-pill" id="badge-budget-status">Active</span>
+    </button>
+    <button class="tab-btn" data-tab="io" role="tab" aria-selected="false">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+        <polyline points="7 10 12 15 17 10"></polyline>
+        <line x1="12" y1="15" x2="12" y2="3"></line>
+      </svg>
+      <span>CSV &amp; Backup</span>
+    </button>
+    <!-- 19. Expandable FAQ Tab -->
+    <button class="tab-btn" data-tab="faq" role="tab" aria-selected="false">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="10"></circle>
+        <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+        <line x1="12" y1="17" x2="12.01" y2="17"></line>
+      </svg>
+      <span>FAQ &amp; Guide</span>
+    </button>
+  </nav>
+
+  <!-- Main Content Area -->
+  <main class="main-content" id="main-content">
+
+    <!-- TAB 1: DASHBOARD -->
+    <section class="tab-panel active" id="panel-dashboard">
+      <!-- 6. Loading Animation Skeleton Container (Shown on month switch) -->
+      <div id="dashboard-loading-skeleton" class="skeleton-loader-row" style="display: none;">
+        <div class="skeleton-box" style="height: 90px;"></div>
+        <div class="skeleton-box" style="height: 90px;"></div>
+        <div class="skeleton-box" style="height: 90px;"></div>
+        <div class="skeleton-box" style="height: 90px;"></div>
+      </div>
+
+      <!-- Editorial Showcase Card (The photography carries the color, UI stays quiet) -->
+      <section class="editorial-showcase-card" aria-label="Monthly Executive Portfolio Overview">
+        <div class="editorial-media-frame">
+          <img src="images/editorial-architecture.jpg" alt="Architectural interior with warm walnut wood and cognac leather seating" class="editorial-photo" width="420" height="220" loading="eager">
+          <span class="editorial-media-badge">Sovereign Ledger</span>
+        </div>
+        <div class="editorial-content-frame">
+          <div class="editorial-eyebrow">Private Portfolio &bull; Capital Solvency</div>
+          <h2 class="editorial-heading" id="editorial-headline-text">October 2026 Executive Ledger</h2>
+          <p class="editorial-prose">
+            All balance sheet allocations and liquidity streams are reconciled locally in your private browser sandbox. Aggregate savings rate holds at <span class="editorial-accent-callout" id="editorial-savings-rate">41.2%</span>.
+          </p>
+          <div class="editorial-meta-row">
+            <div class="editorial-meta-item">
+              <span class="meta-label">Allocation Integrity</span>
+              <span class="meta-value">92.4% Benchmark</span>
+            </div>
+            <div class="editorial-meta-divider" aria-hidden="true"></div>
+            <div class="editorial-meta-item">
+              <span class="meta-label">Security Realm</span>
+              <span class="meta-value">100% Offline Device</span>
+            </div>
+            <div class="editorial-meta-divider" aria-hidden="true"></div>
+            <div class="editorial-meta-item">
+              <span class="meta-label">Discipline Watch</span>
+              <span class="meta-value" id="editorial-budget-alert-pill">1 Over-Budget Alert</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Top Metrics Summary Cards -->
+      <div class="metrics-row" id="dashboard-metrics-container">
+        <div class="stat-card">
+          <div class="stat-card-header">
+            <span>Total Income</span>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="income">
+              <line x1="12" y1="19" x2="12" y2="5"></line>
+              <polyline points="5 12 12 5 19 12"></polyline>
+            </svg>
+          </div>
+          <div class="stat-card-value income" id="stat-total-income">$0.00</div>
+          <div class="stat-card-subtext" id="stat-income-compare">vs previous month</div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-card-header">
+            <span>Total Expenses</span>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="expense">
+              <line x1="12" y1="5" x2="12" y2="19"></line>
+              <polyline points="19 12 12 19 5 12"></polyline>
+            </svg>
+          </div>
+          <div class="stat-card-value expense" id="stat-total-expenses">$0.00</div>
+          <div class="stat-card-subtext" id="stat-expenses-compare">vs previous month</div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-card-header">
+            <span>Net Savings (Cash Flow)</span>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+              <polyline points="22 4 12 14.01 9 11.01"></polyline>
+            </svg>
+          </div>
+          <div class="stat-card-value savings" id="stat-net-savings">$0.00</div>
+          <div class="stat-card-subtext" id="stat-savings-rate">0% savings rate</div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-card-header">
+            <span>Monthly Budget Remaining</span>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"></circle>
+              <polyline points="12 6 12 12 16 14"></polyline>
+            </svg>
+          </div>
+          <div class="stat-card-value" id="stat-budget-remaining">$0.00</div>
+          <div class="stat-card-subtext" id="stat-budget-utilization">0% of total budget spent</div>
+        </div>
+      </div>
+
+      <!-- Plain-English Insights Section with Tactile Editorial Vignette -->
+      <div class="insights-container">
+        <div class="insights-header">
+          <div class="insights-title">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="12" y1="16" x2="12" y2="12"></line>
+              <line x1="12" y1="8" x2="12.01" y2="8"></line>
+            </svg>
+            <span>Plain-English Financial Insights</span>
+          </div>
+          <span style="font-size: 11px; color: var(--text-muted);" id="insights-count-label">Analyzing this month</span>
+        </div>
+        <div class="insights-layout-row">
+          <div class="insights-media-thumb">
+            <img src="images/editorial-interior.jpg" alt="Tactile interior still life" class="insights-thumb-photo" width="200" height="140" loading="lazy">
+            <div class="insights-thumb-caption">Fiscal Restraint</div>
+          </div>
+          <div class="insights-grid" id="insights-grid">
+            <!-- Dynamically populated -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Charts Section: Spending by Category & Month-over-Month Trend -->
+      <div class="charts-grid">
+        <!-- Spending by Category Donut Chart -->
+        <div class="chart-card">
+          <div class="chart-header">
+            <div class="chart-title">Spending by Category</div>
+            <div class="chart-controls">
+              <span style="font-size: 11px; color: var(--text-muted);" id="donut-total-count">0 Categories</span>
+            </div>
+          </div>
+          <div class="chart-body">
+            <div class="donut-layout">
+              <div class="donut-svg-container">
+                <svg id="donut-svg" width="200" height="200" viewBox="0 0 200 200"></svg>
+                <div class="donut-center-text">
+                  <div class="donut-center-label">Total Spent</div>
+                  <div class="donut-center-val" id="donut-center-val">$0</div>
+                </div>
+              </div>
+              <div class="donut-legend" id="donut-legend">
+                <!-- Dynamically populated -->
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Month-over-Month Trend Chart -->
+        <div class="chart-card">
+          <div class="chart-header">
+            <div class="chart-title">Month-over-Month Trend (6-Month History)</div>
+            <div class="chart-controls">
+              <!-- 9. Copy Button: Copy Monthly Summary -->
+              <button class="btn btn-secondary btn-sm" id="btn-copy-monthly-summary" title="Copy Monthly Summary to Clipboard">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                </svg>
+                <span id="btn-copy-summary-text">Copy Summary</span>
+              </button>
+              <!-- 10. Print Stylesheet: Print Report -->
+              <button class="btn btn-secondary btn-sm" id="btn-export-statement" title="Print Monthly Report">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="6 9 6 2 18 2 18 9"></polyline>
+                  <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+                  <rect x="6" y="14" width="12" height="8"></rect>
+                </svg>
+                <span>Print Report</span>
+              </button>
+            </div>
+          </div>
+          <div class="chart-body">
+            <div class="trend-svg-container">
+              <svg id="trend-svg" width="100%" height="240"></svg>
+            </div>
+            <div class="trend-legend-bar">
+              <div><span class="trend-legend-dot" style="background: var(--success);"></span> Income</div>
+              <div><span class="trend-legend-dot" style="background: var(--danger);"></span> Expenses</div>
+              <div><span class="trend-legend-dot" style="background: var(--primary);"></span> Net Savings</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 2: TRANSACTIONS LEDGER -->
+    <section class="tab-panel" id="panel-transactions">
+      <div class="ledger-container">
+        <!-- Toolbar: Search, Filters, Add Button -->
+        <div class="ledger-toolbar">
+          <div class="filter-group">
+            <input type="text" class="search-input" id="tx-search" placeholder="Search payee, notes or category...">
+            <select class="select-filter" id="tx-type-filter" title="Filter by Type">
+              <option value="all">All Types</option>
+              <option value="expense">Expenses Only</option>
+              <option value="income">Income Only</option>
+            </select>
+            <select class="select-filter" id="tx-category-filter" title="Filter by Category">
+              <option value="all">All Categories</option>
+            </select>
+            <select class="select-filter" id="tx-sort-filter" title="Sort Order">
+              <option value="date-desc">Newest First</option>
+              <option value="date-asc">Oldest First</option>
+              <option value="amount-desc">Highest Amount</option>
+              <option value="amount-asc">Lowest Amount</option>
+            </select>
+          </div>
+          <div style="display: flex; gap: 8px;">
+            <button class="btn btn-secondary btn-sm" id="btn-quick-export-csv" title="Export Current Filtered List as CSV">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="7 10 12 15 17 10"></polyline>
+                <line x1="12" y1="15" x2="12" y2="3"></line>
+              </svg>
+              <span>Export CSV</span>
+            </button>
+            <button class="btn btn-primary btn-sm" id="btn-toolbar-add-tx">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+              </svg>
+              <span>+ Add Entry</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Ledger Table with 11. Sticky Header -->
+        <div class="table-wrapper">
+          <table class="ledger-table" id="ledger-table">
+            <thead>
+              <tr>
+                <th style="width: 100px;">Date</th>
+                <th style="width: 80px;">Type</th>
+                <th>Category</th>
+                <th>Description / Payee</th>
+                <th>Method</th>
+                <th style="text-align: right;">Amount</th>
+                <th style="width: 80px; text-align: center;">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="ledger-tbody">
+              <!-- Dynamically populated -->
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Pagination & Summary Footer -->
+        <div class="table-pagination">
+          <span id="tx-pagination-info">Showing 0 transactions</span>
+          <div style="display: flex; gap: 6px;" id="tx-pagination-buttons">
+            <!-- Dynamically populated -->
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 3: MONTHLY BUDGETS -->
+    <section class="tab-panel" id="panel-budgets">
+      <div class="budget-overview-card">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+          <div>
+            <h2 style="font-size: 15px; font-weight: 700; color: var(--text-main);">Monthly Category Budgets</h2>
+            <p style="font-size: 11.5px; color: var(--text-muted); margin-top: 2px;">
+              Set monthly budget spending targets for each category. Track progress and see how much is left.
+            </p>
+          </div>
+          <div style="display: flex; gap: 8px;">
+            <button class="btn btn-secondary btn-sm" id="btn-copy-prev-budget">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+              </svg>
+              <span>Copy Previous Month's Limits</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Total Monthly Budget Progress Banner -->
+        <div style="margin-top: 14px; background: var(--surface-card); border: 1px solid var(--border); padding: 12px 16px; border-radius: var(--radius-sm);">
+          <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px;">
+            <div>
+              <span style="font-size: 12px; font-weight: 600; color: var(--text-muted);">Total Monthly Budget:</span>
+              <span style="font-size: 14px; font-weight: 700; color: var(--text-main); margin-left: 6px;" id="total-budgeted-sum">$0</span>
+            </div>
+            <div>
+              <span style="font-size: 12px; font-weight: 600; color: var(--text-muted);">Total Spent:</span>
+              <span style="font-size: 14px; font-weight: 700; color: var(--danger); margin-left: 6px;" id="total-budgeted-spent">$0</span>
+              <span style="font-size: 12px; color: var(--text-dim); margin-left: 6px;" id="total-budget-left-pill">(Remaining: $0)</span>
+            </div>
+          </div>
+          <div class="progress-track" style="height: 8px;">
+            <div class="progress-bar-fill" id="total-budget-bar" style="width: 0%;"></div>
+          </div>
+        </div>
+
+        <!-- Category Budget Cards Grid -->
+        <div class="budget-grid" id="budget-cards-grid">
+          <!-- Dynamically populated -->
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 4: CSV IMPORT / EXPORT & DATA MANAGEMENT -->
+    <section class="tab-panel" id="panel-io">
+      <div class="io-grid">
+        <!-- Relational SQL Database Card -->
+        <div class="io-card sql-status-card" id="card-sql-status">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
+            <h3 style="margin: 0; display: flex; align-items: center; gap: 8px;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <ellipse cx="12" cy="5" rx="9" ry="3"></ellipse>
+                <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path>
+                <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path>
+              </svg>
+              <span>Relational SQL Database</span>
+            </h3>
+            <span class="badge-pill" id="sql-engine-pill">SQLite 3 Active</span>
+          </div>
+          <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px;">
+            Connected directly to an embedded SQLite database using WAL (Write-Ahead Logging) journal mode with ACID transaction guarantees.
+          </p>
+
+          <div class="sql-metrics-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 12px;">
+            <div class="sql-metric-box">
+              <span class="sql-metric-label">Transactions</span>
+              <span class="sql-metric-value" id="sql-stat-tx">0</span>
+            </div>
+            <div class="sql-metric-box">
+              <span class="sql-metric-label">Categories</span>
+              <span class="sql-metric-value" id="sql-stat-cat">0</span>
+            </div>
+            <div class="sql-metric-box">
+              <span class="sql-metric-label">Budgets</span>
+              <span class="sql-metric-value" id="sql-stat-budgets">0</span>
+            </div>
+          </div>
+
+          <div class="sql-meta-list" style="font-size: 11.5px; color: var(--text-muted); margin-bottom: 12px; border-top: 1px solid var(--border); padding-top: 8px; display: flex; flex-direction: column; gap: 4px;">
+            <div><strong>Engine:</strong> <span id="sql-meta-engine">Node.js Native node:sqlite</span></div>
+            <div><strong>Database File:</strong> <code id="sql-meta-path" style="font-size: 10.5px; font-family: monospace;">data/pulseguard.sqlite</code></div>
+            <div><strong>File Size:</strong> <span id="sql-meta-size">0 KB</span> &bull; <strong>Status:</strong> <span id="sql-meta-status" style="color: var(--accent);">Connected (WAL)</span></div>
+          </div>
+
+          <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+            <a href="/api/db/download" class="btn btn-primary btn-sm" id="btn-download-sqlite" download="pulseguard.sqlite" style="text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="7 10 12 15 17 10"></polyline>
+                <line x1="12" y1="15" x2="12" y2="3"></line>
+              </svg>
+              <span>Download .sqlite File</span>
+            </a>
+            <button class="btn btn-secondary btn-sm" id="btn-sync-sql">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"></path>
+              </svg>
+              <span>Re-sync from SQL</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- CSV Export Card -->
+        <div class="io-card">
+          <h3>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="7 10 12 15 17 10"></polyline>
+              <line x1="12" y1="15" x2="12" y2="3"></line>
+            </svg>
+            <span>Export Transactions (CSV)</span>
+          </h3>
+          <p style="font-size: 12px; color: var(--text-muted);">
+            Download your financial records as a standard CSV spreadsheet compatible with Excel, Google Sheets, and personal finance software.
+          </p>
+          <div class="form-group">
+            <label class="form-label" for="export-range-select">Date Range to Export</label>
+            <select class="form-select" id="export-range-select">
+              <option value="current">Current Month Only (<span id="export-curr-month-name">October 2026</span>)</option>
+              <option value="all">All Recorded Transactions (All Time)</option>
+            </select>
+          </div>
+          <button class="btn btn-primary" id="btn-run-export-csv">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="7 10 12 15 17 10"></polyline>
+              <line x1="12" y1="15" x2="12" y2="3"></line>
+            </svg>
+            <span>Download CSV File</span>
+          </button>
+        </div>
+
+        <!-- CSV Import Card -->
+        <div class="io-card">
+          <h3>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="17 8 12 3 7 8"></polyline>
+              <line x1="12" y1="3" x2="12" y2="15"></line>
+            </svg>
+            <span>Import Transactions (CSV)</span>
+          </h3>
+          <p style="font-size: 12px; color: var(--text-muted);">
+            Upload bank or credit card CSV files. Headers supported: Date, Type, Category, Description, Amount, Method.
+          </p>
+          <div class="dropzone" id="csv-dropzone">
+            <input type="file" id="csv-file-input" accept=".csv,text/csv" style="display:none;">
+            <div class="dropzone-icon">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
+                <line x1="12" y1="18" x2="12" y2="12"></line>
+                <line x1="9" y1="15" x2="15" y2="15"></line>
+              </svg>
+            </div>
+            <div class="dropzone-text">Click to browse or drag &amp; drop CSV file</div>
+            <div class="dropzone-subtext">Max file size: 5MB &bull; RFC-4180 standard</div>
+          </div>
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <button class="btn btn-secondary btn-sm" id="btn-download-sample-csv">
+              <span>Download Sample CSV Template</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Browser Storage, Passcode Lock & UTM Card -->
+        <div class="io-card">
+          <h3>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <ellipse cx="12" cy="5" rx="9" ry="3"></ellipse>
+              <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path>
+              <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path>
+            </svg>
+            <span>Browser Storage &amp; Privacy</span>
+          </h3>
+          <p style="font-size: 12px; color: var(--text-muted);">
+            100% of your data remains strictly inside your browser's local storage. Nothing is transmitted to external servers.
+          </p>
+
+          <!-- 13. Password / Passcode Visibility Toggle -->
+          <div class="passcode-lock-section" style="background: var(--surface-card); border: 1px solid var(--border); padding: 12px; border-radius: var(--radius-sm);">
+            <label class="form-label" for="vault-passcode" style="display: flex; justify-content: space-between; align-items: center;">
+              <span>Optional Local Passcode Lock</span>
+              <span id="passcode-status-pill" class="badge-pill" style="font-size: 9.5px;">Unset</span>
+            </label>
+            <div class="password-input-wrapper" style="position: relative; margin-top: 4px;">
+              <input type="password" id="vault-passcode" class="form-input" placeholder="Set a privacy passcode..." style="padding-right: 36px;">
+              <button type="button" id="btn-toggle-pw" class="btn-toggle-pw" title="Toggle Passcode Visibility" aria-label="Toggle password visibility">
+                <!-- Eye open -->
+                <svg id="pw-icon-eye" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                  <circle cx="12" cy="12" r="3"></circle>
+                </svg>
+                <!-- Eye slashed -->
+                <svg id="pw-icon-eye-off" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none;">
+                  <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                  <line x1="1" y1="1" x2="23" y2="23"></line>
+                </svg>
+              </button>
+            </div>
+            <div style="display: flex; gap: 6px; margin-top: 6px;">
+              <button class="btn btn-secondary btn-sm" id="btn-save-passcode">Save Passcode</button>
+              <button class="btn btn-secondary btn-sm" id="btn-clear-passcode" style="color: var(--text-dim);">Clear</button>
+            </div>
+          </div>
+
+          <!-- 14. UTM Tracking Details Box -->
+          <div class="utm-details-box" style="background: var(--surface-card); border: 1px solid var(--border); padding: 10px 12px; border-radius: var(--radius-sm); font-size: 11.5px;">
+            <div style="font-weight: 700; color: var(--text-main); margin-bottom: 4px; display: flex; align-items: center; justify-content: space-between;">
+              <span>UTM Campaign Attribution</span>
+              <span id="utm-status-pill" class="badge-pill" style="font-size: 9px;">Direct</span>
+            </div>
+            <div id="utm-details-content" style="color: var(--text-muted);">
+              No active UTM campaign detected in URL.
+            </div>
+          </div>
+
+          <div style="display: flex; flex-direction: column; gap: 8px;">
+            <button class="btn btn-secondary btn-sm" id="btn-export-json-backup">
+              <span>Export Full Backup (JSON)</span>
+            </button>
+            <input type="file" id="json-file-input" accept=".json" style="display:none;">
+            <button class="btn btn-secondary btn-sm" id="btn-import-json-backup">
+              <span>Restore Backup from JSON</span>
+            </button>
+            <button class="btn btn-secondary btn-sm" id="btn-reset-demo-data">
+              <span>Restore Sample Financial Data</span>
+            </button>
+            <button class="btn btn-danger btn-sm" id="btn-clear-all-data">
+              <span>Wipe All Local Storage Data</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 5: 19. EXPANDABLE FAQ -->
+    <section class="tab-panel" id="panel-faq">
+      <div class="faq-container">
+        <!-- Architectural Editorial Masthead (Photography Carries Organic Structure) -->
+        <div class="faq-editorial-masthead">
+          <div class="faq-editorial-image-frame">
+            <img src="images/editorial-minimal.jpg" alt="Architectural geometric facade" class="faq-masthead-img" width="320" height="180" loading="lazy">
+          </div>
+          <div class="faq-editorial-intro">
+            <div class="editorial-eyebrow">Architecture &bull; Sovereignty</div>
+            <h3 class="faq-masthead-title">Sovereign Financial Privacy</h3>
+            <p class="faq-masthead-desc">
+              PulseGuard is built with an absolute philosophy of restraint: your financial balance sheet belongs exclusively to you, secured inside client-side browser storage and embedded SQL without telemetry, trackers, or remote dependencies.
+            </p>
+          </div>
+        </div>
+
+        <div style="margin-bottom: 16px;">
+          <h2 style="font-family: var(--font-display); font-size: 18px; font-weight: 600; color: var(--text-main);">Frequently Asked Questions &amp; Guide</h2>
+          <p style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">
+            Learn how PulseGuard protects your privacy, calculates plain-English insights, and processes data.
+          </p>
+        </div>
+
+        <div class="faq-accordion">
+          <!-- FAQ 1 -->
+          <details class="faq-item" open>
+            <summary class="faq-summary">
+              <span class="faq-question">How is my financial data stored and kept private?</span>
+              <svg class="faq-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg>
+            </summary>
+            <div class="faq-answer">
+              100% of your transactions, categories, and monthly budgets are stored locally inside your browser using the HTML5 LocalStorage API. No data is ever transmitted to cloud servers, remote databases, or third-party analytical platforms. You can export complete JSON backups anytime for safekeeping.
+            </div>
+          </details>
+
+          <!-- FAQ 2 -->
+          <details class="faq-item">
+            <summary class="faq-summary">
+              <span class="faq-question">What is the recommended 50/30/20 budget framework?</span>
+              <svg class="faq-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg>
+            </summary>
+            <div class="faq-answer">
+              The 50/30/20 rule divides your after-tax income into three buckets: 50% for Needs (Housing, Groceries, Utilities, Healthcare), 30% for Wants (Dining, Entertainment, Shopping), and 20% for Savings or Debt Paydown. The dashboard insights engine automatically flags when your savings rate drops below or exceeds the healthy 20% target.
+            </div>
+          </details>
+
+          <!-- FAQ 3 -->
+          <details class="faq-item">
+            <summary class="faq-summary">
+              <span class="faq-question">What CSV column formats are supported for bank imports?</span>
+              <svg class="faq-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg>
+            </summary>
+            <div class="faq-answer">
+              The importer accepts standard RFC-4180 CSV files. Supported header variants include: Date (YYYY-MM-DD or MM/DD/YYYY), Type (expense/income), Category, Description (or Payee), Amount (with or without currency symbols), and Payment Method. You can download our sample CSV template from the CSV &amp; Backup tab to verify formatting.
+            </div>
+          </details>
+
+          <!-- FAQ 4 -->
+          <details class="faq-item">
+            <summary class="faq-summary">
+              <span class="faq-question">How are the plain-English financial insights generated?</span>
+              <svg class="faq-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg>
+            </summary>
+            <div class="faq-answer">
+              The built-in analytics engine evaluates your spending in real time. It checks for category budget overages (e.g. &ldquo;Dining is 32% over budget&rdquo;), nearing thresholds (&gt;85% spent), month-over-month category variance (e.g. &ldquo;Groceries decreased by 12%&rdquo;), and top expense concentration drivers.
+            </div>
+          </details>
+
+          <!-- FAQ 5 -->
+          <details class="faq-item">
+            <summary class="faq-summary">
+              <span class="faq-question">Can I switch currencies and print financial statements?</span>
+              <svg class="faq-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg>
+            </summary>
+            <div class="faq-answer">
+              Yes. You can switch between USD ($), EUR (&euro;), GBP (&pound;), INR (&inr;), CAD (C$), AUD (A$), and JPY (&yen;) anytime from the top navigation. Clicking &ldquo;Print Report&rdquo; opens a printer-optimized monthly statement layout hiding all navigation chrome and buttons.
+            </div>
+          </details>
+        </div>
+      </div>
+    </section>
+
+    <!-- 7. Comprehensive Footer -->
+    <footer class="app-footer">
+      <div class="footer-top">
+        <div class="footer-brand">
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <div class="brand-logo" style="width: 26px; height: 26px;" aria-hidden="true">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                <path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"></path>
+                <path d="M3 5v14a2 2 0 0 0 2 2h16v-5"></path>
+                <path d="M18 12a2 2 0 0 0 0 4h4v-4Z"></path>
+              </svg>
+            </div>
+            <span style="font-weight: 700; font-size: 14px; color: var(--text-main);">PulseGuard</span>
+          </div>
+          <p style="font-size: 11.5px; color: var(--text-muted); margin-top: 6px; max-width: 320px; line-height: 1.4;">
+            Personal financial early-warning and budget manager. 100% offline-first, stored locally in your browser with zero external telemetry.
+          </p>
+        </div>
+
+        <div class="footer-col">
+          <div class="footer-heading">Navigation</div>
+          <div class="footer-links-list">
+            <button class="footer-link-btn" data-tab="dashboard">Dashboard</button>
+            <button class="footer-link-btn" data-tab="transactions">Transactions Ledger</button>
+            <button class="footer-link-btn" data-tab="budgets">Monthly Budgets</button>
+            <button class="footer-link-btn" data-tab="io">CSV &amp; Backup</button>
+            <button class="footer-link-btn" data-tab="faq">FAQ &amp; Guide</button>
+          </div>
+        </div>
+
+        <div class="footer-col">
+          <div class="footer-heading">Support &amp; Inquiries</div>
+          <div class="footer-links-list">
+            <!-- 18. Clickable Phone -->
+            <a href="tel:+18005550199" class="footer-contact-link" title="Call PulseGuard Support">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+              <span>+1 (800) 555-0199</span>
+            </a>
+            <!-- 19. Clickable Email -->
+            <a href="mailto:support@pulseguard.local" class="footer-contact-link" title="Email PulseGuard Support">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+              <span>support@pulseguard.local</span>
+            </a>
+            <button class="footer-link-btn" id="btn-open-footer-contact">Open Contact Drawer</button>
+          </div>
+        </div>
+
+        <div class="footer-col">
+          <div class="footer-heading">Privacy &amp; Terms</div>
+          <div class="footer-links-list">
+            <button class="footer-link-btn" id="btn-open-privacy-modal">Privacy Policy</button>
+            <button class="footer-link-btn" id="btn-open-terms-modal">LocalStorage Terms</button>
+            <div style="display: flex; align-items: center; gap: 6px; margin-top: 6px; font-size: 11px; color: var(--success);">
+              <span class="sync-dot"></span>
+              <span>Local Vault Active</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <!-- 9. Copyright Year 2026 -->
+        <div style="font-size: 11.5px; color: var(--text-dim);">
+          &copy; <span id="copyright-year">2026</span> PulseGuard. Built for personal, private offline budgeting. All data stored in browser.
+        </div>
+        <div style="display: flex; gap: 14px; font-size: 11px; color: var(--text-dim);">
+          <span>WCAG AA Accessible</span>
+          <span>RFC-4180 CSV Compliant</span>
+          <span>No Cloud Telemetry</span>
+        </div>
+      </div>
+    </footer>
+
+  </main>
+
+  <!-- 4. ^ Back to Top Button -->
+  <button id="btn-back-to-top" class="btn-back-to-top" title="Scroll to top" aria-label="Back to top">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+      <polyline points="18 15 12 9 6 15"></polyline>
+    </svg>
+    <span>Top</span>
+  </button>
+
+  <!-- 20. Floating Contact Button & Drawer -->
+  <button id="btn-floating-contact" class="floating-contact-btn" title="Contact &amp; Feedback" aria-label="Open Feedback Drawer">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+    </svg>
+  </button>
+
+  <div class="contact-drawer" id="drawer-contact" aria-hidden="true">
+    <div class="contact-drawer-header">
+      <span style="font-weight: 700; font-size: 14px; color: var(--text-main);">Quick Contact &amp; Support</span>
+      <button class="btn-close-modal" id="btn-close-contact-drawer" aria-label="Close Contact Drawer">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+    </div>
+    <div class="contact-drawer-body">
+      <!-- 18 & 19. Clickable Contact Links in Drawer -->
+      <div style="background: var(--surface-card); border: 1px solid var(--border); padding: 10px 12px; border-radius: var(--radius-sm); font-size: 11.5px;">
+        <div style="font-weight: 700; color: var(--text-main); margin-bottom: 6px;">Direct Channels</div>
+        <div style="display: flex; flex-direction: column; gap: 6px;">
+          <a href="tel:+18005550199" class="footer-contact-link">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+            <span>+1 (800) 555-0199</span>
+          </a>
+          <a href="mailto:support@pulseguard.local" class="footer-contact-link">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+            <span>support@pulseguard.local</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- 15 & 16. Form Feedback Messages -->
+      <div id="contact-form-error" class="form-error-banner" style="display:none;"></div>
+      <div id="contact-form-success" class="form-success-banner" style="display:none;"></div>
+
+      <form id="form-contact">
+        <div class="form-group">
+          <label class="form-label" for="contact-name">Your Name *</label>
+          <input type="text" id="contact-name" class="form-input" required placeholder="Alex Mercer">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="contact-email">Email Address *</label>
+          <input type="email" id="contact-email" class="form-input" required placeholder="alex@example.com">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="contact-topic">Feedback Topic</label>
+          <select id="contact-topic" class="form-select">
+            <option value="General Question">General Question</option>
+            <option value="Feature Request">Feature Request</option>
+            <option value="CSV Import Support">CSV Import Support</option>
+            <option value="Bug Report">Bug Report</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="contact-message">Message *</label>
+          <textarea id="contact-message" class="form-textarea" rows="4" required placeholder="How can we help with your budgeting?"></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 6px;">Send Message</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: PRIVACY POLICY & LOCAL STORAGE TERMS -->
+  <div class="modal-overlay" id="modal-privacy-terms">
+    <div class="modal-box" style="max-width: 560px;" role="dialog" aria-labelledby="privacy-modal-title">
+      <div class="modal-header">
+        <h3 class="modal-title" id="privacy-modal-title">Privacy Policy &amp; LocalStorage Terms</h3>
+        <button class="btn-close-modal" id="btn-close-privacy-modal" aria-label="Close Modal">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+      <div style="font-size: 12px; color: var(--text-muted); line-height: 1.6; display: flex; flex-direction: column; gap: 10px;">
+        <p>
+          <strong>1. Zero Cloud Data Collection:</strong> PulseGuard does not transmit your personal financial records, income figures, spending history, or category limits to any external server. 100% of all operations occur client-side inside your browser sandbox and embedded SQLite database.
+        </p>
+        <p>
+          <strong>2. LocalStorage Persistence:</strong> All transactions are saved in your device's browser storage under secure domain-isolated storage keys. You have complete ownership of your data and can export or wipe it at any time.
+        </p>
+        <p>
+          <strong>3. Direct Contact:</strong> If you have questions about offline compliance or feature suggestions, reach us directly at <a href="mailto:support@pulseguard.local" class="footer-contact-link">support@pulseguard.local</a> or <a href="tel:+18005550199" class="footer-contact-link">+1 (800) 555-0199</a>.
+        </p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary btn-sm" id="btn-dismiss-privacy-modal">Understood</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. Simple Cookie / Storage Banner -->
+  <div id="cookie-banner" class="cookie-banner" role="dialog" aria-label="Storage and privacy notice">
+    <div class="cookie-banner-content">
+      <div class="cookie-icon-wrapper" aria-hidden="true">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"></circle>
+          <path d="M12 2a10 10 0 0 0-1.5 19.88"></path>
+          <circle cx="8.5" cy="8.5" r="1" fill="currentColor"></circle>
+          <circle cx="15.5" cy="12.5" r="1" fill="currentColor"></circle>
+          <circle cx="10.5" cy="15.5" r="1" fill="currentColor"></circle>
+        </svg>
+      </div>
+      <div>
+        <div class="cookie-title">Storage &amp; Privacy Notice</div>
+        <div class="cookie-desc">
+          PulseGuard uses local device storage to keep your budget data 100% private. No third-party tracking cookies or external ad trackers are used.
+        </div>
+      </div>
+    </div>
+    <div class="cookie-banner-actions">
+      <button class="btn btn-secondary btn-sm" id="btn-cookie-preferences">Preferences</button>
+      <button class="btn btn-primary btn-sm" id="btn-cookie-accept">Accept &amp; Continue</button>
+    </div>
+  </div>
+
+  <!-- 17. In-App Confirmation Modal -->
+  <div class="modal-overlay" id="modal-confirm">
+    <div class="modal-box" style="max-width: 440px;" role="dialog" aria-labelledby="confirm-modal-title">
+      <div class="modal-header">
+        <h3 class="modal-title" id="confirm-modal-title">Confirm Action</h3>
+        <button class="btn-close-modal" id="btn-close-confirm-modal" aria-label="Close">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+      <div id="confirm-modal-body" style="font-size: 12.5px; color: var(--text-muted); line-height: 1.5;">
+        Are you sure you want to proceed with this action?
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" id="btn-confirm-cancel">Cancel</button>
+        <button type="button" class="btn btn-danger" id="btn-confirm-proceed">Proceed</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: ADD / EDIT TRANSACTION -->
+  <div class="modal-overlay" id="modal-transaction">
+    <div class="modal-box" role="dialog" aria-labelledby="modal-tx-title">
+      <div class="modal-header">
+        <h3 class="modal-title" id="modal-tx-title">Add Transaction</h3>
+        <button class="btn-close-modal" id="btn-close-tx-modal" aria-label="Close Modal">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+
+      <!-- 15 & 16. Form Error / Success State Banners -->
+      <div id="tx-form-error" class="form-error-banner" style="display:none;"></div>
+      <div id="tx-form-success" class="form-success-banner" style="display:none;"></div>
+
+      <form id="form-transaction">
+        <input type="hidden" id="tx-id" value="">
+
+        <!-- Transaction Type Toggle -->
+        <div class="form-group">
+          <label class="form-label">Transaction Type</label>
+          <div class="type-toggle-group">
+            <button type="button" class="type-toggle-btn active expense" id="toggle-type-expense" data-type="expense">Expense</button>
+            <button type="button" class="type-toggle-btn income" id="toggle-type-income" data-type="income">Income</button>
+          </div>
+        </div>
+
+        <!-- Amount & Date -->
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="tx-amount">Amount (<span class="currency-symbol">$</span>) *</label>
+            <input type="number" step="0.01" min="0.01" class="form-input" id="tx-amount" required placeholder="0.00">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="tx-date">Date *</label>
+            <input type="date" class="form-input" id="tx-date" required>
+          </div>
+        </div>
+
+        <!-- Category & Payment Method -->
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="tx-category">Category *</label>
+            <select class="form-select" id="tx-category" required>
+              <!-- Populated dynamically based on type -->
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="tx-method">Payment Method</label>
+            <select class="form-select" id="tx-method">
+              <option value="Credit Card">Credit Card</option>
+              <option value="Debit Card">Debit Card</option>
+              <option value="Bank Transfer">Bank Transfer</option>
+              <option value="Direct Deposit">Direct Deposit</option>
+              <option value="Cash">Cash</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Description / Payee -->
+        <div class="form-group">
+          <label class="form-label" for="tx-desc">Description / Payee *</label>
+          <input type="text" class="form-input" id="tx-desc" required placeholder="e.g. Trader Joe's, TechWorks Payroll, Monthly Rent">
+        </div>
+
+        <!-- Notes -->
+        <div class="form-group">
+          <label class="form-label" for="tx-notes">Notes (Optional)</label>
+          <input type="text" class="form-input" id="tx-notes" placeholder="Optional details, receipts, or context">
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" id="btn-cancel-tx">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="btn-save-tx">Save Transaction</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: EDIT CATEGORY BUDGET -->
+  <div class="modal-overlay" id="modal-edit-budget">
+    <div class="modal-box" role="dialog" aria-labelledby="modal-budget-title">
+      <div class="modal-header">
+        <h3 class="modal-title" id="modal-budget-title">Edit Monthly Budget Limit</h3>
+        <button class="btn-close-modal" id="btn-close-budget-modal" aria-label="Close Modal">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+
+      <!-- 15 & 16. Form Error / Success State Banners -->
+      <div id="budget-form-error" class="form-error-banner" style="display:none;"></div>
+      <div id="budget-form-success" class="form-success-banner" style="display:none;"></div>
+
+      <form id="form-edit-budget">
+        <input type="hidden" id="budget-cat-id" value="">
+        <div class="form-group">
+          <label class="form-label">Category</label>
+          <div style="font-size: 14px; font-weight: 700; color: var(--text-main);" id="budget-cat-name">Dining</div>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="budget-limit-input">Monthly Budget Limit (<span class="currency-symbol">$</span>) *</label>
+          <input type="number" step="10" min="0" class="form-input" id="budget-limit-input" required placeholder="400">
+        </div>
+        <p style="font-size: 11px; color: var(--text-muted);">
+          Applies to <span id="budget-month-target">October 2026</span>. Updates your remaining allowance and spending insights instantly.
+        </p>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" id="btn-cancel-budget">Cancel</button>
+          <button type="submit" class="btn btn-primary">Update Budget</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: CSV IMPORT PREVIEW -->
+  <div class="modal-overlay" id="modal-csv-preview">
+    <div class="modal-box" style="max-width: 680px;" role="dialog" aria-labelledby="modal-csv-title">
+      <div class="modal-header">
+        <h3 class="modal-title" id="modal-csv-title">CSV Import Preview</h3>
+        <button class="btn-close-modal" id="btn-close-csv-preview" aria-label="Close Modal">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+      <div>
+        <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px;" id="csv-preview-summary">
+          Parsed 0 records. Review sample records below before finalizing.
+        </p>
+        <div class="table-wrapper" style="max-height: 240px; overflow-y: auto;">
+          <table class="ledger-table" style="font-size: 11px;">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Type</th>
+                <th>Category</th>
+                <th>Description</th>
+                <th style="text-align: right;">Amount</th>
+              </tr>
+            </thead>
+            <tbody id="csv-preview-tbody">
+              <!-- Dynamically populated -->
+            </tbody>
+          </table>
+        </div>
+        <div class="form-group" style="margin-top: 14px;">
+          <label class="form-label" for="csv-import-mode">Import Strategy</label>
+          <select class="form-select" id="csv-import-mode">
+            <option value="append">Append to existing transactions</option>
+            <option value="replace">Replace all current transactions</option>
+          </select>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" id="btn-cancel-import">Cancel</button>
+        <button type="button" class="btn btn-primary" id="btn-confirm-import">Confirm &amp; Import</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div class="toast-container" id="toast-container" aria-live="polite"></div>
+
+  <!-- Load Sample Data & App Script -->
+  <script src="sample-data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
